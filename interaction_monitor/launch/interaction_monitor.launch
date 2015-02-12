@@ -1,0 +1,14 @@
+<launch>
+
+    <!-- Input Parameters -->
+    <arg name="DATA_SET" />
+
+    <node name="interaction_monitor" 
+        pkg="interaction_monitor" 
+        type="interaction_monitor_node" 
+        output="screen" 
+        args="$(find interaction_monitor)/Data/$(arg DATA_SET)" >
+    </node>
+
+
+</launch>
