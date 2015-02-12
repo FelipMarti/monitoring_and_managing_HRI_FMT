@@ -21,7 +21,30 @@ struct AnnotationList {
     std::vector <Annotation> list;
 };
 
-void data_parser(const char *path, std::vector <AnnotationList> &dataParsed ) {
+//TODO
+void parse_time(TiXmlElement* root, std::string timeIni, std::string timeEnd, 
+                double &tIni, double &tEnd) 
+{
+    if (root == NULL) {
+        ROS_ERROR("[interaction_monitor]: Failed to load file: No root element");
+        exit(1);
+    }    
+
+    //ROOT
+    for(TiXmlElement* elem = root->FirstChildElement();
+        elem !=0; elem = elem->NextSiblingElement()) {
+        
+        //TIME_ORDER
+        std::string elemName = elem->Value();
+        if (elemName == "TIME_ORDER") {
+            //TODO
+        }
+   } 
+ 
+}
+
+void data_parser(const char *path, std::vector <AnnotationList> &dataParsed ) 
+{
     /// Reading XML file to obtain data
     ROS_INFO("[interaction_monitor]: Parsing XML file");
 
@@ -71,16 +94,13 @@ void data_parser(const char *path, std::vector <AnnotationList> &dataParsed ) {
                         else {
                             tmpAnn.text="";
                         }
-                        //Time extraction
+                        //Time slot extraction
                         const char* timeIni = subchild->Attribute("TIME_SLOT_REF1");
                         const char* timeEnd = subchild->Attribute("TIME_SLOT_REF2");
-                        std::cout<<timeIni<<std::endl;
-                        std::cout<<timeEnd<<std::endl;
-                        //TODO
                         //TODO OBTAIN TIME!!!!!!
-                        //TODO
-                        tmpAnn.initTime=0;
-                        tmpAnn.endTime=0;
+                        //Time value extraction
+                        parse_time(root, timeIni, timeEnd, tmpAnn.initTime, tmpAnn.endTime);
+
                         //Filling data
                         dataParsed[numListAnnotation].list.push_back(tmpAnn); 
                         
