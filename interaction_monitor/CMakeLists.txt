@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   cmake_modules
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -45,11 +46,12 @@ find_package(TinyXML REQUIRED)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
+ add_message_files(
+   FILES
+   Annotation.msg
 #   Message1.msg
 #   Message2.msg
-# )
+ )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -66,10 +68,10 @@ find_package(TinyXML REQUIRED)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+ generate_messages(
+   DEPENDENCIES
+   std_msgs  # Or other packages containing msgs
+ )
 
 ###################################
 ## catkin specific configuration ##
@@ -83,7 +85,7 @@ find_package(TinyXML REQUIRED)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES interaction_monitor
-#  CATKIN_DEPENDS TinyXML roscpp
+  CATKIN_DEPENDS message_runtime #TinyXML roscpp
 #  DEPENDS system_lib
 )
 
