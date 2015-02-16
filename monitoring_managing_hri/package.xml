@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>monitoring_managing_HRI</name>
+  <name>monitoring_managing_hri</name>
   <version>0.0.0</version>
-  <description>The monitoring_managing_HRI package</description>
+  <description>The monitoring_managing_hri package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/monitoring_managing_HRI</url> -->
+  <!-- <url type="website">http://wiki.ros.org/monitoring_managing_hri</url> -->
 
 
   <!-- Author tags are optional, mutiple are allowed, one per tag -->
