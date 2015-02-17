@@ -54,6 +54,7 @@ void parse_time(TiXmlElement* root, std::string timeIni, std::string timeEnd,
 
             }
         }
+
    } 
  
 }
@@ -140,6 +141,7 @@ void data_parser(const char *path, std::vector <AnnotationList> &dataParsed )
 int main(int argc, char **argv)
 {
 
+    /// Cheking input parameters
     ros::init(argc, argv, "parser");
     if (argc != 2) {
         ROS_ERROR("[interaction_monitor]: Input parameters error");
@@ -150,46 +152,52 @@ int main(int argc, char **argv)
 
     ros::NodeHandle n;
 
-    ros::Rate loop_rate(10);
+    ros::Rate loop_rate(1000);
     
-    // Before publishing we have to parse the XML file to read the data
+    /// Before publishing we have to parse the XML file to read the data
     std::vector <AnnotationList> dataParsed;
     data_parser(argv[1], dataParsed);
 
-///////////////DEBUG////////////////////
-std::cout<<"MORE INFO: "<<std::endl;
-for(int i=0;i<dataParsed.size();i++) {
-    std::cout<<dataParsed[i].id<<std::endl;
-    for (int j=0;j<dataParsed[i].list.size();j++) {
-        std::cout<<dataParsed[i].list[j].text<<std::endl;
-        std::cout<<dataParsed[i].list[j].initTime<<std::endl;
-        std::cout<<dataParsed[i].list[j].endTime<<std::endl;
-    }
-}
-/////////////ENDDEBUG///////////////////
-
-    // Creating publishers
+    /// Creating publishers
     ros::Publisher annotation_pub[dataParsed.size()];
     for (int i=0; i<dataParsed.size(); i++) { 
         annotation_pub[i]=n.advertise<interaction_monitor::Annotation>(dataParsed[i].id, 10);
     }
 
-    /**
-     * A timer counter to publish the video data 
-     */
     ROS_INFO("[interaction_monitor]: Start Publishing!");
-    int count_time = 0;
+    int current_time = 0;
+    /// Main Loop
     while (ros::ok()) {
-        /**
-         * This is a message object. You stuff it with data, and then publish it.
-         */
+        
+        // Topic message
         interaction_monitor::Annotation annotation_msg[dataParsed.size()];
     
-        //TODO FILL MSG TOPICS
-        //Taking into account time
-        //and poping vectors, once endT==current_time
+        /// Filling message topics
+        for (int i=0; i<dataParsed.size(); i++) {
 
-        // Publishing messages 
+            // Check no empty vector to avoid segmentation fault
+            if (dataParsed[i].list.size() > 0) {
+                // Check init time to publish data or not
+                if (dataParsed[i].list[0].initTime <= current_time) {
+                    annotation_msg[i].text=dataParsed[i].list[0].text;
+                    annotation_msg[i].tini=dataParsed[i].list[0].initTime;
+                    annotation_msg[i].tend=dataParsed[i].list[0].endTime;
+                }
+                else {
+                    annotation_msg[i].text="";
+                    annotation_msg[i].tini=0;
+                    annotation_msg[i].tend=0;
+                }
+                // Check end time to erase element
+                if (dataParsed[i].list[0].endTime == current_time) {
+                    dataParsed[i].list.erase(dataParsed[i].list.begin());
+                }
+            } 
+
+        }
+
+        ROS_INFO("[interaction_monitor]: Publishing, time: %dms",current_time);
+        /// Publishing messages 
         for (int i=0; i<dataParsed.size(); i++) {
             annotation_pub[i].publish(annotation_msg[i]);
         }
@@ -197,7 +205,7 @@ for(int i=0;i<dataParsed.size();i++) {
         ros::spinOnce();
     
         loop_rate.sleep();
-        ++count_time;
+        ++current_time;
     }
 
     return 0;
