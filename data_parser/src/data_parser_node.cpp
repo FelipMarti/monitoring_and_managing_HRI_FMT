@@ -3,11 +3,10 @@
 #include "data_parser/Parse.h"
 #include <tinyxml.h>
 
-#include <sstream>
 
 /**
- *  Node to parse an XML file where all the information of the HRI is stored
- *  This node also published the data information 
+ *  ROSservice to parse an XML file given a path where all the information of the HRI is stored
+ *  returns all the data parsed 
  */
 
 
@@ -131,8 +130,7 @@ bool parse_data(std::string path, data_parser::DataParsed &dataParsed )
 }
 
 
-bool parse(data_parser::Parse::Request  &req,
-           data_parser::Parse::Response &res) {
+bool parse_srv(data_parser::Parse::Request  &req, data_parser::Parse::Response &res) {
     
     return parse_data(req.path, res.data);
     
@@ -145,7 +143,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "data_parser_server");
     ros::NodeHandle n;
 
-    ros::ServiceServer service = n.advertiseService("parse_data", parse);
+    ros::ServiceServer service = n.advertiseService("parse_data", parse_srv);
     ROS_INFO("[data_parser_service] Ready to parse your data!");
 
     ros::spin();
