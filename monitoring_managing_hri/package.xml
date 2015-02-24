@@ -40,6 +40,7 @@
   <!--   <run_depend>message_runtime</run_depend> -->
   <run_depend>data_parser</run_depend> 
   <run_depend>interaction_monitor</run_depend> 
+  <run_depend>interaction_recognition</run_depend> 
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
