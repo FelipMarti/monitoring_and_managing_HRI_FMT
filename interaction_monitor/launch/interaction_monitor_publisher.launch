@@ -10,10 +10,10 @@
         output="screen" > 
     </node>
 
-    <!-- Interaction monitor base -->
+    <!-- Interaction_monitor publisher -->
     <node name="interaction_monitor" 
         pkg="interaction_monitor" 
-        type="interaction_monitor_example" 
+        type="interaction_monitor_publisher" 
         output="screen" 
         args="$(find data_parser)/data/$(arg DATA)" >
     </node>
