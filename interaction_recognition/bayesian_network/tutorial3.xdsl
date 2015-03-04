@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<smile version="1.0" id="tutorial3" numsamples="1000">
+	<nodes>
+		<cpt id="Success">
+			<state id="Success" />
+			<state id="Failure" />
+			<probabilities>0.2 0.8</probabilities>
+		</cpt>
+		<cpt id="Forecast">
+			<state id="Good" />
+			<state id="Moderate" />
+			<state id="Poor" />
+			<parents>Success</parents>
+			<probabilities>0.4 0.4 0.2 0.1 0.3 0.6</probabilities>
+		</cpt>
+	</nodes>
+	<extensions>
+		<genie version="1.0" name="Tutorial 3 - Creating a Bayesian Network. " faultnameformat="nodestate">
+			<comment>Tutorial 3 - Creating a Bayesian Network. \n\nPart of GeNIe Help.\n\nGeNIe Help Online : http://www.sis.pitt.edu/~genie/GeNIeHelp/\n\nDownload GeNIe at : http://www.sis.pitt.edu/~genie</comment>
+			<node id="Success">
+				<name>Success of the venture</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>143 63 221 111</position>
+			</node>
+			<node id="Forecast">
+				<name>Expert forecast</name>
+				<interior color="e5f6f7" />
+				<outline color="000080" />
+				<font color="000000" name="Arial" size="8" />
+				<position>142 161 223 211</position>
+			</node>
+			<textbox>
+				<caption>Tutorial 3 : Creating a Bayesian Network</caption>
+				<font color="993300" name="Arial" size="14" />
+				<position>23 20 357 42</position>
+			</textbox>
+			<textbox>
+				<caption>GeNIe Help Online : http://www.sis.pitt.edu/~genie/GeNIeHelp/</caption>
+				<font color="3366ff" name="Arial" size="9" bold="true" />
+				<position>21 223 361 238</position>
+			</textbox>
+		</genie>
+	</extensions>
+</smile>
