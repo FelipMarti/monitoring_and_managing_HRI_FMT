@@ -1,7 +1,7 @@
 <launch>
 
     <!-- Input Parameters -->
-    <arg name="DATA_SET" />
+    <arg name="DATA" />
 
     <!-- Parser server -->
     <node name="data_parser" 
