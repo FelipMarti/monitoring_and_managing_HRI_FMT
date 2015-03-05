@@ -103,8 +103,8 @@ include_directories(
 
 ## Declare a cpp executable
  add_executable(interaction_monitor_publisher src/interaction_monitor_publisher.cpp)
- add_executable(interaction_monitor_example src/interaction_monitor_example.cpp)
- add_executable(interaction_monitor_presentation src/interaction_monitor_presentation.cpp)
+ add_executable(interaction_monitor_present_1file src/interaction_monitor_present_1file.cpp)
+ add_executable(interaction_monitor_present src/interaction_monitor_present.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -114,10 +114,10 @@ include_directories(
  target_link_libraries(interaction_monitor_publisher
     ${catkin_LIBRARIES}
  )
- target_link_libraries(interaction_monitor_example 
+ target_link_libraries(interaction_monitor_present_1file
     ${catkin_LIBRARIES}
  )
- target_link_libraries(interaction_monitor_presentation
+ target_link_libraries(interaction_monitor_present
     ${catkin_LIBRARIES}
  )
 
