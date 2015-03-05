@@ -1,7 +1,7 @@
 <launch>
 
     <!-- Input Parameters -->
-    <arg name="DATA_SET" />
+    <arg name="DATA" />
 
     <!-- Parser server -->
     <node name="data_parser" 
@@ -13,7 +13,7 @@
     <!-- Interaction_monitor publisher -->
     <node name="interaction_monitor" 
         pkg="interaction_monitor" 
-        type="interaction_monitor_presentation" 
+        type="interaction_monitor_present_1file" 
         output="screen" 
         args="$(find data_parser)/data/$(arg DATA)" >
     </node>
