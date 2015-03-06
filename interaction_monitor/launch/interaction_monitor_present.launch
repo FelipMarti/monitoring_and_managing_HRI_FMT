@@ -15,7 +15,7 @@
         pkg="interaction_monitor" 
         type="interaction_monitor_present" 
         output="screen" 
-        args="$(find data_parser)/data/$(arg DATA)" >
+        args="$(find data_parser)/data/ $(arg DATA)" >
     </node>
 
 
