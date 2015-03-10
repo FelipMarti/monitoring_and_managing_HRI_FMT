@@ -62,7 +62,9 @@ int main(int argc, char **argv)
     ROS_INFO("[interaction_monitor] Start Publishing!"); 
 
     /// Fill msg taking into account usr_present annotations in all the files
+    // For all the files parsed
     for (int i=0; i<argc-2; i++) {
+        // While ros OK and still are present annotations in [i] file parsed
         while (ros::ok() and usrPresentAnnotations[i].list.size()>0) {
     
             // Topic message
@@ -70,17 +72,17 @@ int main(int argc, char **argv)
             pub_msg.data.resize(dataXmlFile[i].data.size());
     
             /// Filling msg, with all different kind of annotations
+            // For all annotations in [i] file parsed
             for (int j=0;j<dataXmlFile[i].data.size();j++) {
                   
-                int k=0;
                 const int tenSeconds=10000;
                 bool noMoar=false;
                 /// Obtaining the last annotation in 10s before presentation
                 while (dataXmlFile[i].data[j].list.size() > 0 and !noMoar) {
-                    if (usrPresentAnnotations[i].list[0].tini-tenSeconds < 
-                      dataXmlFile[i].data[j].list[k].tend and 
-                      usrPresentAnnotations[i].list[0].tend >
-                      dataXmlFile[i].data[j].list[k].tini ) {
+                    if (usrPresentAnnotations[i].list[0].tini-tenSeconds <= 
+                      dataXmlFile[i].data[j].list[0].tend and 
+                      usrPresentAnnotations[i].list[0].tend >=
+                      dataXmlFile[i].data[j].list[0].tini ) {
 
                         // INSERT!!!
                         // Temp vars to Fill pub_msg
@@ -104,13 +106,13 @@ int main(int argc, char **argv)
                     // if the element is farther than 10s of the presentation
                     // just delete it and continue searching
                     else if (usrPresentAnnotations[i].list[0].tini-tenSeconds >
-                        dataXmlFile[i].data[j].list[k].tini) {
+                        dataXmlFile[i].data[j].list[0].tend) {
                         // Delete 1st element
                         dataXmlFile[i].data[j].list.erase(dataXmlFile[i].data[j].list.begin());
                     } 
                     // No more elements in the list, so skip the bucle 
                     else if (usrPresentAnnotations[i].list[0].tend <
-                        dataXmlFile[i].data[j].list[k].tini) {
+                        dataXmlFile[i].data[j].list[0].tini) {
                         noMoar=true;
                     }
     
@@ -129,6 +131,16 @@ int main(int argc, char **argv)
         }
 
     }
+
+
+    /// Publishing last message and closing the node
+    data_parser::DataParsed last_pub_msg;
+    last_pub_msg.data.resize(1);
+    last_pub_msg.data[0].id="NoMOAR!";
+    annotation_pub.publish(last_pub_msg);
+    
+    ROS_WARN("[interaction_monitor] Nothing else to publish!!!");
+    ROS_WARN("[interaction_monitor] So, the node is stopped gently :)");
     return 0;
 
 }
