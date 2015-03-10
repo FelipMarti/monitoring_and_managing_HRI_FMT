@@ -7,9 +7,9 @@
 #define _INTERACTION_LEARNER_NODE_HPP
 
 #include "ros/ros.h"
-#include "std_msgs/String.h"
-#include "smile.h"
 #include "data_parser/DataParsed.h"
+#include "smile.h"
+#include "smilearn.h"
 
 class InteractionLearner {
 
@@ -27,12 +27,14 @@ private:
 
     // Variables
     // Bayesian Network
-    std::vector<std::string> LastCommandData;
-    std::vector<std::string> UsrAnnounceData;
-    std::vector<std::string> UsrGestureData;
-    std::vector<std::string> HeadingAdjData;
-    std::vector<std::string> DistanceAdjData;
-    std::vector<std::string> UsrPresent;
+    DSL_dataset dataBayesianNetwork;
+
+    std::vector<std::string> lastCommandData;
+    std::vector<std::string> usrAnnounceData;
+    std::vector<std::string> usrGestureData;
+    std::vector<std::string> headingAdjData;
+    std::vector<std::string> distanceAdjData;
+    std::vector<std::string> usrPresent;
 
 
 

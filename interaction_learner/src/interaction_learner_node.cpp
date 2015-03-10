@@ -19,98 +19,115 @@ InteractionLearner::InteractionLearner (void)
                                 &InteractionLearner::read_data_callback, this);
 
     // Init Bayesian Network learning variables
-    LastCommandData.resize(0);    
-    UsrAnnounceData.resize(0);
-    UsrGestureData.resize(0);
-    HeadingAdjData.resize(0);
-    DistanceAdjData.resize(0);
-    UsrPresent.resize(0);
+    lastCommandData.resize(0);    
+    usrAnnounceData.resize(0);
+    usrGestureData.resize(0);
+    headingAdjData.resize(0);
+    distanceAdjData.resize(0);
+    usrPresent.resize(0);
     
 }
-
 
 
 InteractionLearner::~InteractionLearner (void)
 {
 }
 
+
 void InteractionLearner::read_data_callback(const data_parser::DataParsed& msg) {
     ROS_INFO("[InteractionLearner] I've heard something");
 
-    // Filling Bayesian Network learning variables
-    LastCommandData.push_back("none");
-    UsrAnnounceData.push_back("no");
-    UsrGestureData.push_back("none");
-    HeadingAdjData.push_back("no");
-    DistanceAdjData.push_back("no");
-    UsrPresent.push_back("none");
-
-    for (int i=0;i<msg.data.size();++i) {
-        if (msg.data[i].id == "usr_cmd") {
-            LastCommandData.pop_back();
-            LastCommandData.push_back(msg.data[i].list[0].text);
-        }
-        if (msg.data[i].id == "usr_announce") {
-            UsrAnnounceData.pop_back();
-            UsrAnnounceData.push_back("yes");
-        }
-        if (msg.data[i].id == "usr_gesture") {
-            UsrGestureData.pop_back();
-            UsrGestureData.push_back(msg.data[i].list[0].text);
-        }
-        if (msg.data[i].id == "usr_mov") {
-            HeadingAdjData.pop_back();
-            HeadingAdjData.push_back("yes");
-
-            std::size_t found1=msg.data[i].list[0].text.find("closer");
-            std::size_t found2=msg.data[i].list[0].text.find("further");
-            if ( found1!=std::string::npos or found2!=std::string::npos ) {
-                DistanceAdjData.pop_back();
-                DistanceAdjData.push_back("yes");
+    if (msg.data[0].id=="NoMOAR!") {
+        // Generate Bayesian Network
+        ROS_INFO("[InteractionLearner] Generating BN");
+//TODO: Fill vars with ints, not strings
+//        dataBayesianNetwork.AddIntVar("Last Command",&lastCommandData);
+    }
+    else { 
+        // Filling Bayesian Network learning variables
+        lastCommandData.push_back("none");
+        usrAnnounceData.push_back("no");
+        usrGestureData.push_back("none");
+        headingAdjData.push_back("no");
+        distanceAdjData.push_back("no");
+        usrPresent.push_back("none");
+    
+        for (int i=0;i<msg.data.size();++i) {
+            if (msg.data[i].id == "usr_cmd") {
+                lastCommandData.pop_back();
+                lastCommandData.push_back(msg.data[i].list[0].text);
             }
-
+            if (msg.data[i].id == "usr_announce") {
+                usrAnnounceData.pop_back();
+                usrAnnounceData.push_back("yes");
+            }
+            if (msg.data[i].id == "usr_gesture") {
+                usrGestureData.pop_back();
+                usrGestureData.push_back(msg.data[i].list[0].text);
+            }
+            if (msg.data[i].id == "usr_mov") {
+    
+                std::size_t found1=msg.data[i].list[0].text.find("adj");
+                std::size_t found2=msg.data[i].list[0].text.find("adjustment");
+                if ( found1!=std::string::npos or found2!=std::string::npos ) {
+                    headingAdjData.pop_back();
+                    headingAdjData.push_back("yes");
+                }
+    
+                found1=msg.data[i].list[0].text.find("closer");
+                found2=msg.data[i].list[0].text.find("further");
+                if ( found1!=std::string::npos or found2!=std::string::npos ) {
+                    distanceAdjData.pop_back();
+                    distanceAdjData.push_back("yes");
+                }
+    
+            }
+            if (msg.data[i].id == "usr_present") {
+                usrPresent.pop_back();
+                usrPresent.push_back(msg.data[i].list[0].text);
+            }
+    
         }
-        if (msg.data[i].id == "usr_present") {
-            UsrPresent.pop_back();
-            UsrPresent.push_back(msg.data[i].list[0].text);
-        }
-
     }
 
-for( std::vector<std::string>::const_iterator i = LastCommandData.begin(); 
-     i != LastCommandData.end(); 
+
+//////////////////////DEBUG
+for( std::vector<std::string>::const_iterator i = lastCommandData.begin(); 
+     i != lastCommandData.end(); 
      ++i)
      std::cout << *i << ' ';
      std::cout<<std::endl;
-for( std::vector<std::string>::const_iterator i = UsrAnnounceData.begin(); 
-     i != UsrAnnounceData.end(); 
+for( std::vector<std::string>::const_iterator i = usrAnnounceData.begin(); 
+     i != usrAnnounceData.end(); 
      ++i)
      std::cout << *i << ' ';
      std::cout<<std::endl;
-for( std::vector<std::string>::const_iterator i = UsrGestureData.begin(); 
-     i != UsrGestureData.end(); 
+for( std::vector<std::string>::const_iterator i = usrGestureData.begin(); 
+     i != usrGestureData.end(); 
      ++i)
      std::cout << *i << ' ';
      std::cout<<std::endl;
-for( std::vector<std::string>::const_iterator i = HeadingAdjData.begin(); 
-     i != HeadingAdjData.end(); 
+for( std::vector<std::string>::const_iterator i = headingAdjData.begin(); 
+     i != headingAdjData.end(); 
      ++i)
      std::cout << *i << ' ';
      std::cout<<std::endl;
-for( std::vector<std::string>::const_iterator i = DistanceAdjData.begin(); 
-     i != DistanceAdjData.end(); 
+for( std::vector<std::string>::const_iterator i = distanceAdjData.begin(); 
+     i != distanceAdjData.end(); 
      ++i)
      std::cout << *i << ' ';
      std::cout<<std::endl;
 
-for( std::vector<std::string>::const_iterator i = UsrPresent.begin(); 
-     i != UsrPresent.end(); 
+for( std::vector<std::string>::const_iterator i = usrPresent.begin(); 
+     i != usrPresent.end(); 
      ++i)
      std::cout << *i << ' ';
      std::cout<<std::endl;
+//////////////////////ENDDEBUG
         
 
 }
+
 
 int InteractionLearner::Main ()
 {
