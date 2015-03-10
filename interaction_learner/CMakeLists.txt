@@ -111,8 +111,9 @@ include_directories(/usr/include/libsmile)
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(interaction_learner_node
-   ${catkin_LIBRARIES}
-   smile smilearn
+   ${catkin_LIBRARIES} 
+   smilearn
+   smile
  )
 
 #############
