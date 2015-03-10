@@ -97,8 +97,8 @@ int main(int argc, char **argv)
 
         /// Check if we can stop running the node
         if (checkIfNothingElseToPublish == dataXmlFile.data.size()) {
-            ROS_INFO("[interaction_monitor] Nothing else to publish!!!");
-            ROS_INFO("[interaction_monitor] So, the node is stopped gently :)");
+            ROS_WARN("[interaction_monitor] Nothing else to publish!!!");
+            ROS_WARN("[interaction_monitor] So, the node is stopped gently :)");
             return 0;    
         }
 
