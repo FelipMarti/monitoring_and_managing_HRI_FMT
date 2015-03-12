@@ -36,6 +36,12 @@ private:
     std::vector<std::string> distanceAdjData;
     std::vector<std::string> usrPresent;
 
+    // Dictionary
+    std::map<std::string,std::string> ObjCategory;
+    void write_category_dictionary(void);
+    
+    //Debug
+    std::list<std::string> llista;
 
 
 public:
