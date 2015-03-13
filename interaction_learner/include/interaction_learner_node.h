@@ -25,23 +25,25 @@ private:
     ros::Publisher joint_pub;
 
 
-    // Variables
+    /// Variables
     // Bayesian Network
     DSL_dataset dataBayesianNetwork;
-
-    std::vector<std::string> lastCommandData;
-    std::vector<std::string> usrAnnounceData;
-    std::vector<std::string> usrGestureData;
-    std::vector<std::string> headingAdjData;
-    std::vector<std::string> distanceAdjData;
-    std::vector<std::string> usrPresent;
+    void set_nomenclature_to_dataset(void);
+    
+    // Vectors to store data to train the BN 
+    std::vector<int> lastCommandData;
+    std::vector<int> usrAnnounceData;
+    std::vector<int> usrGestureData;
+    std::vector<int> headingAdjData;
+    std::vector<int> distanceAdjData;
+    std::vector<int> category;
 
     // Dictionaries
-    std::map<std::string,std::string> ObjCategory;
+    std::map<std::string,int> ObjCategory;
     void write_category_dictionary(void);
-    std::map<std::string,std::string> GestureCategory;
+    std::map<std::string,int> GestureCategory;
     void write_gesture_dictionary(void);
-    std::map<std::string,std::string> CommandCategory;
+    std::map<std::string,int> CommandCategory;
     void write_command_dictionary(void);
     
 
