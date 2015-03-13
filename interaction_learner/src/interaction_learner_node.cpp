@@ -50,12 +50,8 @@ void InteractionLearner::read_data_callback(const data_parser::DataParsed& msg) 
         vecNames.push_back("distanceAdj");
         vecNames.push_back("usrPresent");
 //        dataBayesianNetwork.Reshape(vecNames);
+
     
-    llista.sort();
-    llista.unique();
-for (std::list<std::string>::iterator it=llista.begin(); it != llista.end(); ++it)
-        std::cout << ' ' << *it;
-std::cout<<std::endl;
     }
     else { 
         // Filling Bayesian Network learning variables
@@ -69,7 +65,7 @@ std::cout<<std::endl;
         for (int i=0;i<msg.data.size();++i) {
             if (msg.data[i].id == "usr_cmd") {
                 lastCommandData.pop_back();
-                lastCommandData.push_back(msg.data[i].list[0].text);
+                lastCommandData.push_back(CommandCategory[msg.data[i].list[0].text]);
             }
             if (msg.data[i].id == "usr_announce") {
                 usrAnnounceData.pop_back();
@@ -77,7 +73,7 @@ std::cout<<std::endl;
             }
             if (msg.data[i].id == "usr_gesture") {
                 usrGestureData.pop_back();
-                usrGestureData.push_back(msg.data[i].list[0].text);
+                usrGestureData.push_back(GestureCategory[msg.data[i].list[0].text]);
             }
             if (msg.data[i].id == "usr_mov") {
     
@@ -98,8 +94,7 @@ std::cout<<std::endl;
             }
             if (msg.data[i].id == "usr_present") {
                 usrPresent.pop_back();
-                usrPresent.push_back(msg.data[i].list[0].text);
-                llista.push_back(msg.data[i].list[0].text);
+                usrPresent.push_back(ObjCategory[msg.data[i].list[0].text]);
             }
     
         }
@@ -107,41 +102,6 @@ std::cout<<std::endl;
 
 
 
-//////////////////////DEBUG 
-/*
-for( std::vector<std::string>::const_iterator i = lastCommandData.begin(); 
-     i != lastCommandData.end(); 
-     ++i)
-     std::cout << *i << ' ';
-     std::cout<<std::endl;
-for( std::vector<std::string>::const_iterator i = usrAnnounceData.begin(); 
-     i != usrAnnounceData.end(); 
-     ++i)
-     std::cout << *i << ' ';
-     std::cout<<std::endl;
-for( std::vector<std::string>::const_iterator i = usrGestureData.begin(); 
-     i != usrGestureData.end(); 
-     ++i)
-     std::cout << *i << ' ';
-     std::cout<<std::endl;
-for( std::vector<std::string>::const_iterator i = headingAdjData.begin(); 
-     i != headingAdjData.end(); 
-     ++i)
-     std::cout << *i << ' ';
-     std::cout<<std::endl;
-for( std::vector<std::string>::const_iterator i = distanceAdjData.begin(); 
-     i != distanceAdjData.end(); 
-     ++i)
-     std::cout << *i << ' ';
-     std::cout<<std::endl;
-
-for( std::vector<std::string>::const_iterator i = usrPresent.begin(); 
-     i != usrPresent.end(); 
-     ++i)
-     std::cout << *i << ' ';
-     std::cout<<std::endl;
-*/
-//////////////////////ENDDEBUG
         
 
 }
@@ -150,7 +110,10 @@ for( std::vector<std::string>::const_iterator i = usrPresent.begin();
 int InteractionLearner::Main ()
 {
 
+    // Filling dicctionaries
     write_category_dictionary();
+    write_gesture_dictionary();
+    write_command_dictionary();
 
 
     // Wait for callbacks
@@ -170,29 +133,66 @@ int main(int argc, char** argv) {
 
 
 
+/**
+ *  Dictionary to define commands because some annotations have typographic errors.
+ */
+void InteractionLearner::write_command_dictionary()
+{
+    CommandCategory["back"]="back";
+    CommandCategory["follow"]="follow";
+    CommandCategory["forward"]="forward";
+    CommandCategory["stop"]="stop";
+    CommandCategory["stopp"]="stop";
+    CommandCategory["turn_around"]="turn";
+    CommandCategory["turn_left"]="turn";
+    CommandCategory["turn_right"]="turn";
+    CommandCategory["none"]="none";
+}
 
 
+/**
+ *  Dictionary to define gestures because some annotations have typographic errors.
+ */
+void InteractionLearner::write_gesture_dictionary()
+{
+    GestureCategory["fignertip_point"]="fingertip_point";
+    GestureCategory["fingertip_point"]="fingertip_point";
+    GestureCategory["hand_point"]="hand_point";
+    GestureCategory["hand_point?"]="hand_point";
+    GestureCategory["hold item"]="hold_item";
+    GestureCategory["hold_item"]="hold_item";
+    GestureCategory["sweep_wave"]="sweep_wave";
+    GestureCategory["touch_full_hand"]="touch_full_hand";
+    GestureCategory["touch_item_full_hand"]="touch_full_hand";
+    GestureCategory["touch_item_full_hand / hold_item"]="touch_full_hand";
+    GestureCategory["touch_item_full_hand?"]="touch_full_hand";
+    GestureCategory["none"]="none";
+}
 
 
+/**
+ *  Dictionary to define the presentation category in object, region or workplace.
+ *  Besides, unknown category is defined when it was not confirmed by the robot, or
+ *  could cause ambiguity
+ */
 void InteractionLearner::write_category_dictionary()
 {
-
-    ObjCategory["LUCAS_entrance"]="workspace";
+    ObjCategory["LUCAS_entrance"]="workplace";
     ObjCategory["LUCAS_room"]="region";
-    ObjCategory["Xerox_machine"]="workspace";
+    ObjCategory["Xerox_machine"]="workplace";
     ObjCategory["armchair"]="object";
-    ObjCategory["backboard"]="workspace";
-    ObjCategory["basin"]="workspace";
+    ObjCategory["backboard"]="workplace";
+    ObjCategory["basin"]="workplace";
     ObjCategory["basket"]="object";
     ObjCategory["beer"]="object";
-    ObjCategory["big_table"]="workspace";
+    ObjCategory["big_table"]="workplace";
     ObjCategory["bin"]="object";
     ObjCategory["blue_chair"]="object";
     ObjCategory["board"]="unknown";
     ObjCategory["book"]="object";
     ObjCategory["books"]="object";
-    ObjCategory["bookshelf"]="workspace";
-    ObjCategory["bookshelves"]="workspace";
+    ObjCategory["bookshelf"]="workplace";
+    ObjCategory["bookshelves"]="workplace";
     ObjCategory["bottle"]="object";
     ObjCategory["bottle_of_water"]="object";
     ObjCategory["box"]="object";
@@ -211,13 +211,13 @@ void InteractionLearner::write_category_dictionary()
     ObjCategory["coffee_room"]="region";
     ObjCategory["coffeemachine"]="unknown";
     ObjCategory["coffeemaker"]="workplace";
-    ObjCategory["computer"]="workspace";
+    ObjCategory["computer"]="workplace";
     ObjCategory["computer_keyboard"]="object";
     ObjCategory["computer_monitor"]="workplace";
     ObjCategory["conference_room"]="region";
     ObjCategory["conference_table"]="workplace";
     ObjCategory["control_remote"]="object";
-    ObjCategory["copy_machine"]="workspace";
+    ObjCategory["copy_machine"]="workplace";
     ObjCategory["copy_room"]="region";
     ObjCategory["copy_room_copy_machine_paper"]="workplace";
     ObjCategory["copying_machine"]="workplace";
@@ -230,8 +230,8 @@ void InteractionLearner::write_category_dictionary()
     ObjCategory["drink"]="object";
     ObjCategory["dust bin"]="unknown";
     ObjCategory["dustbin"]="object";
-    ObjCategory["entrance"]="workspace";
-    ObjCategory["entrance_door"]="workspace";
+    ObjCategory["entrance"]="workplace";
+    ObjCategory["entrance_door"]="workplace";
     ObjCategory["entrance_to_LUCAS"]="workplace";
     ObjCategory["entrance_to_the_LUCAS"]="workplace";
     ObjCategory["entrance_to_the_LUCAS_room"]="workplace";
@@ -301,7 +301,7 @@ void InteractionLearner::write_category_dictionary()
     ObjCategory["small_pen"]="object";
     ObjCategory["small_table"]="workplace";
     ObjCategory["stapler"]="object";
-    ObjCategory["table"]="workspace";
+    ObjCategory["table"]="workplace";
     ObjCategory["table_lamp"]="object";
     ObjCategory["tape"]="object";
     ObjCategory["telephone"]="object";
@@ -314,6 +314,4 @@ void InteractionLearner::write_category_dictionary()
     ObjCategory["water_bottle"]="object";
     ObjCategory["whiteboard"]="workplace";
     ObjCategory["window"]="workplace";
-
-
 }

@@ -36,13 +36,14 @@ private:
     std::vector<std::string> distanceAdjData;
     std::vector<std::string> usrPresent;
 
-    // Dictionary
+    // Dictionaries
     std::map<std::string,std::string> ObjCategory;
     void write_category_dictionary(void);
+    std::map<std::string,std::string> GestureCategory;
+    void write_gesture_dictionary(void);
+    std::map<std::string,std::string> CommandCategory;
+    void write_command_dictionary(void);
     
-    //Debug
-    std::list<std::string> llista;
-
 
 public:
 
