@@ -38,9 +38,8 @@ void InteractionLearner::read_data_callback(const data_parser::DataParsed& msg) 
     ROS_INFO("[Interaction_Learner] I've heard something");
 
     if (msg.data[0].id=="NoMOAR!") {
-        // Generate Bayesian Network
-        ROS_INFO("[Interaction_Learner] Training BN");
 
+        /// Generating Bayesian Network
         // Fill vars with data
         dataBayesianNetwork.SetNumberOfRecords(category.size());
         for (int i=0; i<category.size(); i++) {
@@ -56,8 +55,36 @@ void InteractionLearner::read_data_callback(const data_parser::DataParsed& msg) 
                  dataBayesianNetwork.GetNumberOfVariables(), 
                  dataBayesianNetwork.GetNumberOfRecords());
 
-        //TODO: Match DataSet with BN
-        //TODO: Train BN
+
+        // Match the data set and the network:
+        std::vector<DSL_datasetMatch> matches;
+        std::string err;
+        if (dataBayesianNetwork.MatchNetwork(net, matches, err) != DSL_OKAY) {
+            ROS_ERROR("[Interaction_Learner] Cannot match network... exiting.");
+            ROS_ERROR("[Interaction_Learner] %s",err.c_str());
+            exit(1);
+        }
+        else {
+            ROS_INFO("[Interaction_Learner] BN matched successfully :)");
+        }
+
+        // Train BN
+        ROS_INFO("[Interaction_Learner] Training BN");
+        DSL_network result;
+        DSL_nb naive;
+        naive.classVariableId = "category";
+        if (naive.Learn(dataBayesianNetwork,result)!=DSL_OKAY) {
+            ROS_ERROR("[Interaction_Learner] Learning failed");
+            exit(1);
+        }
+        else {
+            pathBN=pathBN+"naivebayes.xdsl";
+            result.WriteFile(pathBN.c_str());      
+            ROS_INFO("[Interaction_Learner] BN generated in:");
+            ROS_INFO("[Interaction_Learner] %s",pathBN.c_str());
+            ROS_WARN("[Interaction_Learner] So, the node is stopped gently :)");
+            exit(0);
+        }
 
     }
     else { 
@@ -110,8 +137,22 @@ void InteractionLearner::read_data_callback(const data_parser::DataParsed& msg) 
 }
 
 
-int InteractionLearner::Main ()
+int InteractionLearner::Main (const char* path, const char* file)
 {
+
+    // Path to write the new BN
+    pathBN=path;
+    
+    // Open the BN network
+    std::string full_path = (std::string) path + (std::string) file;
+    if (net.ReadFile(full_path.c_str(), DSL_XDSL_FORMAT) != DSL_OKAY) {
+        ROS_ERROR("[Interaction_Learner] Cannot read network... exiting.");
+        exit(1);
+    }
+    else {
+        ROS_INFO("[Interaction_Learner] BN opened successfully:");
+        ROS_INFO("[Interaction_Learner] %s",full_path.c_str());
+    }
 
     // Filling dicctionaries
     write_category_dictionary();
@@ -121,18 +162,24 @@ int InteractionLearner::Main ()
     // Preparing dataset for the BN
     set_nomenclature_to_dataset(); 
 
-
     // Wait for callbacks
     ros::spin();
+
 }
 
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv) 
+{
     
     ros::init(argc, argv, "interaction_learner");
-    
+    if (argc != 3) {
+        ROS_ERROR("[interaction_learner] usage: interaction_learner PATH Bayesian_Network");
+        exit(1);
+    }
+
+
     InteractionLearner foo;
-    return foo.Main();
+    return foo.Main(argv[1], argv[2]);
 
 }
 
@@ -159,7 +206,7 @@ void InteractionLearner::set_nomenclature_to_dataset()
     dataBayesianNetwork.SetStateNames(0, vecNames);
 
     /// Node (var) usrAnnounceData 
-    dataBayesianNetwork.AddIntVar("usrAnnounceData");
+    dataBayesianNetwork.AddIntVar("usrAnnounce");
     // states names
     vecNames.resize(0);
     vecNames.push_back("no");       // no  => 0
@@ -179,7 +226,7 @@ void InteractionLearner::set_nomenclature_to_dataset()
     dataBayesianNetwork.SetStateNames(2, vecNames);
 
     /// Node (var) headingAdjData
-    dataBayesianNetwork.AddIntVar("headingAdjData");
+    dataBayesianNetwork.AddIntVar("headingAdj");
     // states names
     vecNames.resize(0);
     vecNames.push_back("no");       // no  => 0
@@ -187,7 +234,7 @@ void InteractionLearner::set_nomenclature_to_dataset()
     dataBayesianNetwork.SetStateNames(3, vecNames);
 
     /// Node (var) distanceAdjData 
-    dataBayesianNetwork.AddIntVar("distanceAdjData");
+    dataBayesianNetwork.AddIntVar("distanceAdj");
     // states names
     vecNames.resize(0);
     vecNames.push_back("no");       // no  => 0
@@ -200,7 +247,7 @@ void InteractionLearner::set_nomenclature_to_dataset()
     vecNames.resize(0);
     vecNames.push_back("object");       // object    => 0 
     vecNames.push_back("region");       // region    => 1
-    vecNames.push_back("workplace");    // workplace => 2
+    vecNames.push_back("workspace");    // workspace => 2
     vecNames.push_back("unknown");      // unknown   => 3
     dataBayesianNetwork.SetStateNames(5, vecNames);
 
@@ -261,34 +308,34 @@ void InteractionLearner::write_gesture_dictionary()
 
 
 /**
- *  Dictionary to define the presentation category in object, region or workplace.
+ *  Dictionary to define the presentation category in object, region or workspace.
  *  Besides, unknown category is defined when it was not confirmed by the robot, or
  *  could cause ambiguity
  *
  *  object      => 0
  *  region      => 1
- *  workplace   => 2
+ *  workspace   => 2
  *  unknown     => 3
  *
  */
 void InteractionLearner::write_category_dictionary()
 {
-    ObjCategory["LUCAS_entrance"]=2;      //workplace
+    ObjCategory["LUCAS_entrance"]=2;      //workspace
     ObjCategory["LUCAS_room"]=1;          //region
-    ObjCategory["Xerox_machine"]=2;       //workplace
+    ObjCategory["Xerox_machine"]=2;       //workspace
     ObjCategory["armchair"]=0;            //object
-    ObjCategory["backboard"]=2;           //workplace
-    ObjCategory["basin"]=2;               //workplace
+    ObjCategory["backboard"]=2;           //workspace
+    ObjCategory["basin"]=2;               //workspace
     ObjCategory["basket"]=0;              //object
     ObjCategory["beer"]=0;                //object
-    ObjCategory["big_table"]=2;           //workplace
+    ObjCategory["big_table"]=2;           //workspace
     ObjCategory["bin"]=0;                 //object
     ObjCategory["blue_chair"]=0;          //object
     ObjCategory["board"]=3;               //unknown
     ObjCategory["book"]=0;                //object
     ObjCategory["books"]=0;               //object
-    ObjCategory["bookshelf"]=2;           //workplace
-    ObjCategory["bookshelves"]=2;         //workplace
+    ObjCategory["bookshelf"]=2;           //workspace
+    ObjCategory["bookshelves"]=2;         //workspace
     ObjCategory["bottle"]=0;              //object
     ObjCategory["bottle_of_water"]=0;     //object
     ObjCategory["box"]=0;                 //object
@@ -296,9 +343,9 @@ void InteractionLearner::write_category_dictionary()
     ObjCategory["cable"]=0;               //object
     ObjCategory["chair"]=0;               //object
     ObjCategory["chairs"]=0;              //object
-    ObjCategory["chart"]=2;               //workplace
+    ObjCategory["chart"]=2;               //workspace
     ObjCategory["coffe_machine"]=3;       //unknown
-    ObjCategory["coffe_maker"]=2;         //workplace
+    ObjCategory["coffe_maker"]=2;         //workspace
     ObjCategory["coffee"]=0;              //object
     ObjCategory["coffee-machine"]=3;      //unknown
     ObjCategory["coffee_machine"]=3;      //unknown
@@ -306,40 +353,40 @@ void InteractionLearner::write_category_dictionary()
     ObjCategory["coffee_mug"]=0;          //object
     ObjCategory["coffee_room"]=1;         //region
     ObjCategory["coffeemachine"]=3;       //unknown
-    ObjCategory["coffeemaker"]=2;         //workplace
-    ObjCategory["computer"]=2;            //workplace
+    ObjCategory["coffeemaker"]=2;         //workspace
+    ObjCategory["computer"]=2;            //workspace
     ObjCategory["computer_keyboard"]=0;   //object
-    ObjCategory["computer_monitor"]=2;    //workplace
+    ObjCategory["computer_monitor"]=2;    //workspace
     ObjCategory["conference_room"]=1;     //region
-    ObjCategory["conference_table"]=2;    //workplace
+    ObjCategory["conference_table"]=2;    //workspace
     ObjCategory["control_remote"]=0;      //object
-    ObjCategory["copy_machine"]=2;        //workplace
+    ObjCategory["copy_machine"]=2;        //workspace
     ObjCategory["copy_room"]=1;           //region
-    ObjCategory["copy_room_copy_machine_paper"]=2;//workplace
-    ObjCategory["copying_machine"]=2;     //workplace
-    ObjCategory["copying_room"]=2;        //workplace
+    ObjCategory["copy_room_copy_machine_paper"]=2;//workspace
+    ObjCategory["copying_machine"]=2;     //workspace
+    ObjCategory["copying_room"]=2;        //workspace
     ObjCategory["cup"]=0;                 //object
-    ObjCategory["cupboard"]=2;            //workplace
+    ObjCategory["cupboard"]=2;            //workspace
     ObjCategory["desk"]=3;                //unknown
     ObjCategory["desk_chair"]=0;          //object
-    ObjCategory["door"]=2;                //workplace
+    ObjCategory["door"]=2;                //workspace
     ObjCategory["drink"]=0;               //object
     ObjCategory["dust bin"]=3;            //unknown
     ObjCategory["dustbin"]=0;             //object
-    ObjCategory["entrance"]=2;            //workplace
-    ObjCategory["entrance_door"]=2;       //workplace
-    ObjCategory["entrance_to_LUCAS"]=2;   //workplace
-    ObjCategory["entrance_to_the_LUCAS"]=2;       //workplace
-    ObjCategory["entrance_to_the_LUCAS_room"]=2;  //workplace
+    ObjCategory["entrance"]=2;            //workspace
+    ObjCategory["entrance_door"]=2;       //workspace
+    ObjCategory["entrance_to_LUCAS"]=2;   //workspace
+    ObjCategory["entrance_to_the_LUCAS"]=2;       //workspace
+    ObjCategory["entrance_to_the_LUCAS_room"]=2;  //workspace
     ObjCategory["eraser"]=0;              //object
     ObjCategory["file"]=0;                //object
-    ObjCategory["fridge"]=2;              //workplace
+    ObjCategory["fridge"]=2;              //workspace
     ObjCategory["garbage_can"]=0;         //object
     ObjCategory["glass"]=0;               //object
     ObjCategory["glass_of_water"]=0;      //object
     ObjCategory["glasses"]=0;             //object
     ObjCategory["hallway"]=1;             //region
-    ObjCategory["hanger"]=2;              //workplace
+    ObjCategory["hanger"]=2;              //workspace
     ObjCategory["helmet"]=0;              //object
     ObjCategory["internet_cable"]=0;      //object
     ObjCategory["kensington_lock"]=0;     //object
@@ -352,22 +399,22 @@ void InteractionLearner::write_category_dictionary()
     ObjCategory["lamp"]=0;                //object
     ObjCategory["light"]=0;               //object
     ObjCategory["light_switches"]=3;      //unknown
-    ObjCategory["lucas_entrance"]=2;      //workplace
+    ObjCategory["lucas_entrance"]=2;      //workspace
     ObjCategory["lunch_room"]=1;          //region
     ObjCategory["markers"]=0;             //object
     ObjCategory["meeting_room"]=1;        //region
     ObjCategory["menu"]=3;                //unknown
-    ObjCategory["microwave"]=2;           //workplace
-    ObjCategory["microwave_oven"]=2;      //workplace
+    ObjCategory["microwave"]=2;           //workspace
+    ObjCategory["microwave_oven"]=2;      //workspace
     ObjCategory["milk"]=0;                //object
-    ObjCategory["monitor"]=2;             //workplace
+    ObjCategory["monitor"]=2;             //workspace
     ObjCategory["mouse"]=0;               //object
     ObjCategory["no_fan"]=3;              //unknown
     ObjCategory["notebook"]=3;            //unknown
     ObjCategory["object_printer"]=0;      //object
     ObjCategory["office"]=1;              //region
     ObjCategory["office_room"]=1;         //region
-    ObjCategory["oven"]=2;                //workplace
+    ObjCategory["oven"]=2;                //workspace
     ObjCategory["own_arm"]=3;             //unknown
     ObjCategory["paper"]=0;               //object
     ObjCategory["paper_bin"]=0;           //object
@@ -375,29 +422,29 @@ void InteractionLearner::write_category_dictionary()
     ObjCategory["papers"]=0;              //object
     ObjCategory["pen"]=0;                 //object
     ObjCategory["phone"]=0;               //object
-    ObjCategory["photocopy_machine"]=2;   //workplace
-    ObjCategory["photocopying_machine"]=2;//workplace
+    ObjCategory["photocopy_machine"]=2;   //workspace
+    ObjCategory["photocopying_machine"]=2;//workspace
     ObjCategory["postit"]=0;              //object
     ObjCategory["printer"]=3;             //unknown
     ObjCategory["printer_machine"]=3;     //unknown
-    ObjCategory["printer_room"]=2;        //workplace
-    ObjCategory["printing_room"]=2;       //workplace
-    ObjCategory["projector"]=2;           //workplace
-    ObjCategory["refrigerator"]=2;        //workplace
+    ObjCategory["printer_room"]=2;        //workspace
+    ObjCategory["printing_room"]=2;       //workspace
+    ObjCategory["projector"]=2;           //workspace
+    ObjCategory["refrigerator"]=2;        //workspace
     ObjCategory["remote"]=0;              //object
     ObjCategory["remote_control"]=0;      //object
     ObjCategory["room"]=1;                //region
     ObjCategory["room_4105"]=1;           //region
-    ObjCategory["scanning_machine"]=2;    //workplace
+    ObjCategory["scanning_machine"]=2;    //workspace
     ObjCategory["scissors"]=0;            //object
     ObjCategory["screen"]=3;              //unknown
     ObjCategory["seminar_room"]=1;        //region
-    ObjCategory["shelf"]=2;               //workplace
-    ObjCategory["sink"]=2;                //workplace
+    ObjCategory["shelf"]=2;               //workspace
+    ObjCategory["sink"]=2;                //workspace
     ObjCategory["small_pen"]=0;           //object
-    ObjCategory["small_table"]=2;         //workplace
+    ObjCategory["small_table"]=2;         //workspace
     ObjCategory["stapler"]=0;             //object
-    ObjCategory["table"]=2;               //workplace
+    ObjCategory["table"]=2;               //workspace
     ObjCategory["table_lamp"]=0;          //object
     ObjCategory["tape"]=0;                //object
     ObjCategory["telephone"]=0;           //object
@@ -408,6 +455,6 @@ void InteractionLearner::write_category_dictionary()
     ObjCategory["wall"]=3;                //unknown
     ObjCategory["water"]=0;               //object
     ObjCategory["water_bottle"]=0;        //object
-    ObjCategory["whiteboard"]=2;          //workplace
-    ObjCategory["window"]=2;              //workplace
+    ObjCategory["whiteboard"]=2;          //workspace
+    ObjCategory["window"]=2;              //workspace
 }

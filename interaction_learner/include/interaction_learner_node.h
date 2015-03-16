@@ -29,6 +29,8 @@ private:
     // Bayesian Network
     DSL_dataset dataBayesianNetwork;
     void set_nomenclature_to_dataset(void);
+    std::string pathBN;
+    DSL_network net;
     
     // Vectors to store data to train the BN 
     std::vector<int> lastCommandData;
@@ -59,7 +61,7 @@ public:
      */
     ~InteractionLearner (void);
     
-    int Main();
+    int Main (const char* path, const char* file);
 
 
 
