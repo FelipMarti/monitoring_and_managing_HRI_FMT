@@ -103,7 +103,6 @@ include_directories(
 
 ## Declare a cpp executable
  add_executable(interaction_monitor_publisher src/interaction_monitor_publisher.cpp)
- add_executable(interaction_monitor_present_1file src/interaction_monitor_present_1file.cpp)
  add_executable(interaction_monitor_present src/interaction_monitor_present.cpp)
 
 ## Add cmake target dependencies of the executable/library
@@ -112,9 +111,6 @@ include_directories(
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(interaction_monitor_publisher
-    ${catkin_LIBRARIES}
- )
- target_link_libraries(interaction_monitor_present_1file
     ${catkin_LIBRARIES}
  )
  target_link_libraries(interaction_monitor_present
