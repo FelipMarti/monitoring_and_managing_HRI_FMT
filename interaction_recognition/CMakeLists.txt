@@ -104,10 +104,6 @@ include_directories(/usr/include/libsmile)
 ## Declare a cpp executable
  add_executable(interaction_recognition_node 
                 src/interaction_recognition_node.cpp)
- add_executable(interaction_recognition_example 
-                src/interaction_recognition_example.cpp)
- add_executable(interaction_recognition_example_simple 
-                src/interaction_recognition_example_simple.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -116,14 +112,6 @@ include_directories(/usr/include/libsmile)
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(interaction_recognition_node
-   ${catkin_LIBRARIES}
-   smile smilearn
- )
- target_link_libraries(interaction_recognition_example
-   ${catkin_LIBRARIES}
-   smile smilearn
- )
- target_link_libraries(interaction_recognition_example_simple
    ${catkin_LIBRARIES}
    smile smilearn
  )
