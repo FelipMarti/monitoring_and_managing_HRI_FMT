@@ -1,7 +1,12 @@
 /*
- *      This is de Delta-3 state publisher node. It's subscribed to 
- *      delta3 axis_states, and publishes delta3 joint_states
+ *      This node is used to train a bayesian network.
+ *      It's subscribed to interaction_monitor (annotations topic)
+ *      to obtain data and then generates a BN using SMILEARN libraries
+ *
+ *      Lunds tekniska högskola | LTH 2015
+ *      Felip Marti Carrillo
  */
+
 
 #ifndef _INTERACTION_LEARNER_NODE_HPP
 #define _INTERACTION_LEARNER_NODE_HPP
