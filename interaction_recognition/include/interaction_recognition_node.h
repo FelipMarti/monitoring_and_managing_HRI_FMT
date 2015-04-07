@@ -28,6 +28,18 @@ private:
     /// Variables
     // Bayesian Network
     DSL_network theNet;
+
+    // Statistics
+    int Stats_Results[9]; 
+    // Stats_Results[0] => Correct; 
+    // Stats_Results[1] => Epic Failure; 
+    // Stats_Results[2] => 2 Similar; 
+    // Stats_Results[3] => 3 Similar; 
+    // Stats_Results[4] => 4 Similar; 
+    // Stats_Results[5] => Unknown has category; 
+    // Stats_Results[6] => 2 Similar but not the category, so FAIL; 
+    // Stats_Results[7] => 3 Similar but not the category, so FAIL; 
+    // Stats_Results[8] => WTF!; 
     
     // Dictionaries
     std::map<std::string,int> ObjCategory;
@@ -58,12 +70,6 @@ public:
 
 
 #endif
-
-
-
-
-
-
 
 
 

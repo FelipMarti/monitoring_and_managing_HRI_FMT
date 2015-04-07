@@ -18,6 +18,11 @@ InteractionRecognition::InteractionRecognition (void)
     this->sub = this->n.subscribe("annotations", 10,
                         &InteractionRecognition::perform_inference_callback, this);
 
+    // Init Stats
+    for (int i=0; i<9; i++) {
+         Stats_Results[i]=0; 
+    }
+
 }
 
 
@@ -32,6 +37,17 @@ void InteractionRecognition::perform_inference_callback(const data_parser::DataP
     if (msg.data[0].id=="NoMOAR!") {
         ROS_WARN("[Interaction_Learner] No more data!");
         ROS_WARN("[Interaction_Learner] So, the node is stopped gently :)");
+        ROS_INFO("[Interaction_Learner] ********** STATISTICS **********");
+        ROS_INFO("[Interaction_Learner] %d are OK!!", Stats_Results[0]);
+        ROS_INFO("[Interaction_Learner] %d are Epic Failure!!", Stats_Results[1]);
+        ROS_INFO("[Interaction_Learner] %d are Similar between 2", Stats_Results[2]);
+        ROS_INFO("[Interaction_Learner] %d are Similar between 3", Stats_Results[3]);
+        ROS_INFO("[Interaction_Learner] %d are Similar between 4", Stats_Results[4]);
+        ROS_INFO("[Interaction_Learner] %d are Unknown classified", Stats_Results[5]);
+        ROS_INFO("[Interaction_Learner] %d are Similar between 2, but FAIL", Stats_Results[6]);
+        ROS_INFO("[Interaction_Learner] %d are Similar between 3, but FAIL", Stats_Results[7]);
+        ROS_INFO("[Interaction_Learner] %d WTF!!", Stats_Results[8]);
+        ROS_INFO("[Interaction_Learner] ********** ********** **********");
         exit(0);
     }
     
@@ -107,34 +123,100 @@ void InteractionRecognition::perform_inference_callback(const data_parser::DataP
     int workspaceIndex = theNames->FindPosition("workspace"); 
     int unknownIndex = theNames->FindPosition("unknown"); 
 
+    double P_CategoryIs[4];
+    // 0 P_CategoryIsObject
+    // 1 P_CategoryIsRegion
+    // 2 P_CategoryIsWorkspace
+    // 3 P_CategoryIsUnknown
+
     theCoordinates[0] = objectIndex;
     theCoordinates.GoToCurrentPosition();
     // get P("category" = object)
-    double P_CategoryIsObject = theCoordinates.UncheckedValue();
-    ROS_INFO("[Interaction_Recognition] P(\"category\" = object) = %f",P_CategoryIsObject);
+    P_CategoryIs[0] = theCoordinates.UncheckedValue();
+    ROS_INFO("[Interaction_Recognition] P(\"category\" = object) = %f",P_CategoryIs[0]);
 
     theCoordinates[0] = regionIndex;
     theCoordinates.GoToCurrentPosition();
     // get P("category" = region)
-    double P_CategoryIsRegion = theCoordinates.UncheckedValue();
-    ROS_INFO("[Interaction_Recognition] P(\"category\" = region) = %f",P_CategoryIsRegion);
+    P_CategoryIs[1] = theCoordinates.UncheckedValue();
+    ROS_INFO("[Interaction_Recognition] P(\"category\" = region) = %f",P_CategoryIs[1]);
 
     theCoordinates[0] = workspaceIndex;
     theCoordinates.GoToCurrentPosition();
     // get P("category" = workspace)
-    double P_CategoryIsWorkspace = theCoordinates.UncheckedValue();
-    ROS_INFO("[Interaction_Recognition] P(\"category\" = workspace) = %f",
-                                                            P_CategoryIsWorkspace);
+    P_CategoryIs[2] = theCoordinates.UncheckedValue();
+    ROS_INFO("[Interaction_Recognition] P(\"category\" = workspace) = %f",P_CategoryIs[2]);
 
     theCoordinates[0] = unknownIndex;
     theCoordinates.GoToCurrentPosition();
     // get P("category" = unknown)
-    double P_CategoryIsUnknown = theCoordinates.UncheckedValue();
-    ROS_INFO("[Interaction_Recognition] P(\"category\" = unknown) = %f",P_CategoryIsUnknown);
+    P_CategoryIs[3] = theCoordinates.UncheckedValue();
+    ROS_INFO("[Interaction_Recognition] P(\"category\" = unknown) = %f",P_CategoryIs[3]);
 
     ROS_INFO("[Interaction_Recognition] User was presenting %s, category %d"
                     ,categoryData.c_str(), ObjCategory[categoryData]);
 
+    /// UPDATING STATISTICS
+    int CategoryWin=-1;
+    double P_CategoryWin=-1;
+    for (int i=0; i<4; i++) {
+        if (P_CategoryWin < P_CategoryIs[i]) {
+            P_CategoryWin = P_CategoryIs[i];
+            CategoryWin=i;
+        }
+    }
+
+    // Difference
+    P_CategoryIs[0] = P_CategoryWin-P_CategoryIs[0];
+    P_CategoryIs[1] = P_CategoryWin-P_CategoryIs[1];
+    P_CategoryIs[2] = P_CategoryWin-P_CategoryIs[2];
+    P_CategoryIs[3] = P_CategoryWin-P_CategoryIs[3];
+
+    // Checking results category
+    int equalCategory=0;
+    double MAX_DIFF = 0.1;
+    for (int i=0; i<4; i++) {
+        if (P_CategoryIs[i]<MAX_DIFF) {
+            equalCategory++;
+        }
+    }
+
+    // Updating stats
+    if (equalCategory==1 and ObjCategory[categoryData] == CategoryWin) {
+        Stats_Results[0]++;     // Good Job!
+    }
+    else if (equalCategory==1 and ObjCategory[categoryData] != CategoryWin) {
+        if (ObjCategory[categoryData] == 3) {
+            Stats_Results[5]++;     // Nice, Unknown category classified!
+        }
+        else {
+            Stats_Results[1]++;     // Epic Failure man!
+        }
+    }
+    else if (equalCategory==2) {    // 2 are similar
+        if ( P_CategoryIs[ObjCategory[categoryData]] < MAX_DIFF or 
+             ObjCategory[categoryData] == 3) {
+            Stats_Results[2]++;     // Category is among them, or is Unknown
+        }
+        else {
+            Stats_Results[6]++;     // Category NOT among them, FAIL
+        }
+    }
+    else if (equalCategory==3) {    // 3 are similar
+        if ( P_CategoryIs[ObjCategory[categoryData]] < MAX_DIFF or 
+             ObjCategory[categoryData] == 3) {
+            Stats_Results[3]++;     // Category is among them, or is Unknown
+        }
+        else {
+            Stats_Results[7]++;     // Category NOT among them, FAIL
+        }
+    }
+    else if (equalCategory==4) {    // all are similar
+        Stats_Results[4]++;
+    }
+    else {
+        Stats_Results[8]++;         //WTF??
+    }
 
     // Clear the evidence in nodes
     theNet.GetNode(lastCommand)->Value()->ClearEvidence();
@@ -144,7 +226,7 @@ void InteractionRecognition::perform_inference_callback(const data_parser::DataP
     theNet.GetNode(distanceAdj)->Value()->ClearEvidence();
 
 
-    ROS_INFO("[Interaction_Recognition] * * * * ");
+    ROS_INFO("[Interaction_Recognition] * * * * ") ;
     
 }
 
