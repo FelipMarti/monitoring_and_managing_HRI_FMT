@@ -40,6 +40,13 @@ private:
     // Stats_Results[6] => 2 Similar but not the category, so FAIL; 
     // Stats_Results[7] => 3 Similar but not the category, so FAIL; 
     // Stats_Results[8] => WTF!; 
+    std::vector<std::string> statsFails;
+    std::vector<std::string> statsBetween2;
+    std::vector<std::string> statsAmong3;
+    // Max difference to consider 2 objects different
+    double MAX_DIFF;
+
+    void print_statistics();
     
     // Dictionaries
     std::map<std::string,int> ObjCategory;
@@ -49,6 +56,7 @@ private:
     std::map<std::string,int> CommandCategory;
     void write_command_dictionary(void);
 
+    
 
 
 public:
